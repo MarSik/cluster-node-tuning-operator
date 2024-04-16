@@ -12,10 +12,7 @@ GO_BUILD_RECIPE=$(GO) build -o $(OUT_DIR)/$(PACKAGE_BIN) -ldflags '-X $(PACKAGE)
 GOFMT_CHECK=$(shell find . -not \( \( -wholename './.*' -o -wholename '*/vendor/*' \) -prune \) -name '*.go' | sort -u | xargs gofmt -s -l)
 REV=$(shell git describe --long --tags --match='v*' --always --dirty)
 
-# Upstream tuned daemon variables
-TUNED_REPO:=https://github.com/redhat-performance/tuned.git
-TUNED_COMMIT:=850368d2f89681725e9bd5eb2dfb44ad2226bc73
-TUNED_DIR:=daemon
+TUNED_COMMIT:=HEAD
 
 # API-related variables
 API_TYPES_DIR:=pkg/apis
@@ -49,12 +46,13 @@ include $(addprefix ./vendor/github.com/openshift/build-machinery-go/make/, \
     targets/openshift/crd-schema-gen.mk \
 )
 
-clone-tuned:
-	(cd assets/tuned && \
-	  rm -rf $(TUNED_DIR) && \
-	  git clone -n $(TUNED_REPO) $(TUNED_DIR) && \
-	  cd $(TUNED_DIR) && git checkout $(TUNED_COMMIT) && cd .. && \
-	  rm -rf $(TUNED_DIR)/.git)
+# This target will be run in the Dockerfile to initialize the tuned submodule by cloning it.
+# Moreover, this can be used to update the tuned repo to a specific commit.
+update-tuned-submodule:
+	(git submodule update --init --force && \
+	  cd assets/tuned/tuned && \
+	  git pull origin master && \
+	  git checkout $(TUNED_COMMIT))
 
 build: $(BINDATA) pkg/generated build-performance-profile-creator build-gather-sysinfo
 	$(GO_BUILD_RECIPE)
