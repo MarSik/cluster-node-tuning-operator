@@ -152,7 +152,7 @@ cmdline_realtime=+nohz_full=${isolated_cores} nosoftlockup skew_tick=1 rcutree.k
 {{end}}
 
 {{if .HighPowerConsumption}}
-cmdline_power_performance=${hpc_cstate}
+cmdline_power_performance=${high_power_consumption_cstate}
 {{end}}
 
 {{if and .HighPowerConsumption .RealTimeHint}}
