@@ -69,20 +69,14 @@ spec:
 
       [variables]
 
-      # AMD specific tuning options
-      iommu=+amd_iommu=on iommu=pt
-      hpc_cstate=+processor.max_cstate=1
-      pppm_pstate=+amd_pstate=active
-      hwt_pstate=+amd_pstate=passive
-      default_pstate=+amd_pstate=guided
-
-      # x86 specific tuning options
+      iommu=amd_iommu=on iommu=pt
+      high_power_consumption_cstate=processor.max_cstate=1
 
 
-      cmdline_pstate=${default_pstate}
+      cmdline_pstate=amd_pstate=guided
 
 
-      realtime_args=+tsc=reliable nmi_watchdog=0 mce=off
+      realtime_args=tsc=reliable nmi_watchdog=0 mce=off
     name: openshift-node-performance-amd-x86-manual
   - data: |
       [main]
@@ -91,13 +85,13 @@ spec:
       [variables]
 
       # aarch64 specific tuning options
-      iommu=+iommu.passthrough=1
+      iommu=iommu.passthrough=1
       # No RT args for ARM
       realtime_args=
       # No pstate args for ARM
       cmdline_pstate=
       # No cstate for ARM
-      hpc_cstate=
+      high_power_consumption_cstate=
     name: openshift-node-performance-arm-aarch64-manual
   - data: |
       [main]
@@ -105,20 +99,14 @@ spec:
 
       [variables]
 
-      # Intel specific tuning options
-      iommu=+intel_iommu=on iommu=pt
-      hpc_cstate=+processor.max_cstate=1 intel_idle.max_cstate=0
-      pppm_pstate=+intel_pstate=active
-      hwt_pstate=+intel_pstate=passive
-      default_pstate=+intel_pstate=${f:intel_recommended_pstate}
-
-      # x86 specific tuning options
+      iommu=intel_iommu=on iommu=pt
+      high_power_consumption_cstate=processor.max_cstate=1 intel_idle.max_cstate=0
 
 
-      cmdline_pstate=${default_pstate}
+      cmdline_pstate=intel_pstate=${f:intel_recommended_pstate}
 
 
-      realtime_args=+tsc=reliable nmi_watchdog=0 mce=off
+      realtime_args=tsc=reliable nmi_watchdog=0 mce=off
     name: openshift-node-performance-intel-x86-manual
   recommend:
   - machineConfigLabels:
