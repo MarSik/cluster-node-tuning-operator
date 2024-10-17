@@ -27,16 +27,16 @@ var (
 	cmdlineWithStaticIsolation    = "+isolcpus=domain,managed_irq,${isolated_cores}"
 	cmdlineWithoutStaticIsolation = "+isolcpus=managed_irq,${isolated_cores}"
 	cmdlineRealtime               = "+nohz_full=${isolated_cores} nosoftlockup skew_tick=1 rcutree.kthread_prio=11 ${realtime_args}"
-	cmdlineHighPowerConsumption   = "${hpc_cstate}"
+	cmdlineHighPowerConsumption   = "${high_power_consumption_cstate}"
 	cmdlineIdlePoll               = "+idle=poll"
 	cmdlineHugepages              = "+ default_hugepagesz=1G   hugepagesz=1G hugepages=4"
 	cmdlineAdditionalArgs         = "+audit=0 processor.max_cstate=1 idle=poll intel_idle.max_cstate=0"
 	cmdlineDummy2MHugePages       = "+ default_hugepagesz=1G   hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=0"
 	cmdlineMultipleHugePages      = "+ default_hugepagesz=1G   hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=128"
-	cmdlineIntelPstateActive      = "+intel_pstate=active"
-	cmdlineIntelPstateAutomatic   = "+intel_pstate=${f:intel_recommended_pstate}"
-	cmdlineAmdPstateActive        = "+amd_pstate=active"
-	cmdlineAmdPstateAutomatic     = "+amd_pstate=guided"
+	cmdlineIntelPstateActive      = "intel_pstate=active"
+	cmdlineIntelPstateAutomatic   = "intel_pstate=${f:intel_recommended_pstate}"
+	cmdlineAmdPstateActive        = "amd_pstate=active"
+	cmdlineAmdPstateAutomatic     = "amd_pstate=guided"
 )
 
 var _ = Describe("Tuned", func() {
@@ -547,8 +547,7 @@ var _ = Describe("Tuned", func() {
 				tunedData := getTunedStructuredData(profile, components.ProfileNameAmdX86)
 				variablesSection, err := tunedData.GetSection("variables")
 				Expect(err).ToNot(HaveOccurred())
-				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal("${default_pstate}"))
-				Expect(variablesSection.Key("default_pstate").String()).To(Equal(cmdlineAmdPstateAutomatic))
+				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal(cmdlineAmdPstateAutomatic))
 			})
 		})
 		When("perPodPowerManagement Hint is false and realTime hint is true", func() {
@@ -558,8 +557,7 @@ var _ = Describe("Tuned", func() {
 				tunedData := getTunedStructuredData(profile, components.ProfileNameAmdX86)
 				variablesSection, err := tunedData.GetSection("variables")
 				Expect(err).ToNot(HaveOccurred())
-				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal("${default_pstate}"))
-				Expect(variablesSection.Key("default_pstate").String()).To(Equal(cmdlineAmdPstateAutomatic))
+				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal(cmdlineAmdPstateAutomatic))
 			})
 		})
 		When("perPodPowerManagement Hint is true", func() {
@@ -568,8 +566,7 @@ var _ = Describe("Tuned", func() {
 				tunedData := getTunedStructuredData(profile, components.ProfileNameAmdX86)
 				variablesSection, err := tunedData.GetSection("variables")
 				Expect(err).ToNot(HaveOccurred())
-				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal("${pppm_pstate}"))
-				Expect(variablesSection.Key("pppm_pstate").String()).To(Equal(cmdlineAmdPstateActive))
+				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal(cmdlineAmdPstateActive))
 			})
 		})
 	})
@@ -586,7 +583,7 @@ var _ = Describe("Tuned", func() {
 				tunedData := getTunedStructuredData(profile, components.ProfileNameArmAarch64)
 				variablesSection, err := tunedData.GetSection("variables")
 				Expect(err).ToNot(HaveOccurred())
-				Expect(variablesSection.Key("iommu").String()).To(Equal("+iommu.passthrough=1"))
+				Expect(variablesSection.Key("iommu").String()).To(Equal("iommu.passthrough=1"))
 			})
 		})
 	})
@@ -598,8 +595,7 @@ var _ = Describe("Tuned", func() {
 				tunedData := getTunedStructuredData(profile, components.ProfileNameIntelX86)
 				variablesSection, err := tunedData.GetSection("variables")
 				Expect(err).ToNot(HaveOccurred())
-				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal("${default_pstate}"))
-				Expect(variablesSection.Key("default_pstate").String()).To(Equal(cmdlineIntelPstateAutomatic))
+				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal(cmdlineIntelPstateAutomatic))
 			})
 		})
 		When("perPodPowerManagement Hint is false and realTime hint is true", func() {
@@ -609,8 +605,7 @@ var _ = Describe("Tuned", func() {
 				tunedData := getTunedStructuredData(profile, components.ProfileNameIntelX86)
 				variablesSection, err := tunedData.GetSection("variables")
 				Expect(err).ToNot(HaveOccurred())
-				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal("${default_pstate}"))
-				Expect(variablesSection.Key("default_pstate").String()).To(Equal(cmdlineIntelPstateAutomatic))
+				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal(cmdlineIntelPstateAutomatic))
 			})
 		})
 		When("perPodPowerManagement Hint is true", func() {
@@ -619,8 +614,7 @@ var _ = Describe("Tuned", func() {
 				tunedData := getTunedStructuredData(profile, components.ProfileNameIntelX86)
 				variablesSection, err := tunedData.GetSection("variables")
 				Expect(err).ToNot(HaveOccurred())
-				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal("${pppm_pstate}"))
-				Expect(variablesSection.Key("pppm_pstate").String()).To(Equal(cmdlineIntelPstateActive))
+				Expect(variablesSection.Key("cmdline_pstate").String()).To(Equal(cmdlineIntelPstateActive))
 			})
 		})
 	})
