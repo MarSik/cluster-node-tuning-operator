@@ -139,7 +139,8 @@ initrd_dst_img=
 initrd_add_dir=
 
 # overrides cpu-partitioning cmdline
-cmdline_cpu_part=+nohz=on rcu_nocbs=${isolated_cores} tuned.non_isolcpus=${not_isolated_cpumask} systemd.cpu_affinity=${not_isolated_cores_expanded} ${iommu}
+cmdline_cpu_part=+nohz=on rcu_nocbs=${isolated_cores} tuned.non_isolcpus=${not_isolated_cpumask} systemd.cpu_affinity=${not_isolated_cores_expanded}
+cmdline_iommu=
 
 {{if .StaticIsolation}}
 cmdline_isolation=+isolcpus=domain,managed_irq,${isolated_cores}
@@ -148,7 +149,7 @@ cmdline_isolation=+isolcpus=managed_irq,${isolated_cores}
 {{end}}
 
 {{if .RealTimeHint}}
-cmdline_realtime=+nohz_full=${isolated_cores} nosoftlockup skew_tick=1 rcutree.kthread_prio=11 ${realtime_args}
+cmdline_realtime=+nohz_full=${isolated_cores} nosoftlockup skew_tick=1 rcutree.kthread_prio=11
 {{end}}
 
 {{if .HighPowerConsumption}}

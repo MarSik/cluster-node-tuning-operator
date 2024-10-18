@@ -1,13 +1,9 @@
 [main]
 summary=Platform specific tuning for aarch64
 
-[variables]
+[bootloader]
+# No cstate for ARM
+# No pstate args for ARM
 
 # aarch64 specific tuning options
-iommu=iommu.passthrough=1
-# No RT args for ARM
-realtime_args=
-# No pstate args for ARM
-cmdline_pstate=
-# No cstate for ARM
-high_power_consumption_cstate=
+cmdline_iommu_arm=iommu.passthrough=1

@@ -1,10 +1,8 @@
 [main]
 summary=Platform specific tuning for AMD x86
 
-[variables]
-
-iommu=amd_iommu=on iommu=pt
-high_power_consumption_cstate=processor.max_cstate=1
+[bootloader]
+cmdline_iommu_amd=amd_iommu=on iommu=pt
 
 {{if .PerPodPowerManagement}}
 cmdline_pstate=amd_pstate=active
@@ -14,4 +12,10 @@ cmdline_pstate=amd_pstate=passive
 cmdline_pstate=amd_pstate=guided
 {{end}}
 
-realtime_args=tsc=reliable nmi_watchdog=0 mce=off
+{{if .RealTimeHint}}
+cmdline_realtime_amd=tsc=reliable nmi_watchdog=0 mce=off
+{{end}}
+
+{{if .HighPowerConsumption}}
+cmdline_power_performance_amd=processor.max_cstate=1
+{{end}}

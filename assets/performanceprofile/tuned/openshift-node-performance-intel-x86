@@ -1,10 +1,8 @@
 [main]
 summary=Platform specific tuning for Intel x86
 
-[variables]
-
-iommu=intel_iommu=on iommu=pt
-high_power_consumption_cstate=processor.max_cstate=1 intel_idle.max_cstate=0
+[bootloader]
+cmdline_iommu_intel=intel_iommu=on iommu=pt
 
 {{if .PerPodPowerManagement}}
 cmdline_pstate=intel_pstate=active
@@ -14,4 +12,10 @@ cmdline_pstate=intel_pstate=passive
 cmdline_pstate=intel_pstate=${f:intel_recommended_pstate}
 {{end}}
 
-realtime_args=tsc=reliable nmi_watchdog=0 mce=off
+{{if .RealTimeHint}}
+cmdline_realtime_intel=tsc=reliable nmi_watchdog=0 mce=off
+{{end}}
+
+{{if .HighPowerConsumption}}
+cmdline_power_performance_intel=processor.max_cstate=1 intel_idle.max_cstate=0
+{{end}}
