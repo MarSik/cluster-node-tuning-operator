@@ -134,6 +134,8 @@ avc_cache_threshold=8192
 {{end}}
 
 [bootloader]
+# !! The names are important for Intel and are referenced in openshift-node-performance-intel-x86
+
 # set empty values to disable RHEL initrd setting in cpu-partitioning
 initrd_remove_dir=
 initrd_dst_img=
@@ -152,7 +154,9 @@ cmdline_isolation=+isolcpus=managed_irq,${isolated_cores}
 {{end}}
 
 {{if .RealTimeHint}}
-cmdline_realtime=+nohz_full=${isolated_cores} nosoftlockup skew_tick=1 rcutree.kthread_prio=11
+cmdline_realtime_nohzfull=+nohz_full=${isolated_cores}
+cmdline_realtime_nosoftlookup=+nosoftlockup
+cmdline_realtime_common=+skew_tick=1 rcutree.kthread_prio=11
 {{end}}
 
 {{if .HighPowerConsumption}}
