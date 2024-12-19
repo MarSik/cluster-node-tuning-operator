@@ -17,6 +17,7 @@ WORKDIR=$(dirname "$(realpath "$0")")/..
 ORG=${ORG:-$USER}	# At a minimum, you'll probably want to override this variable.
 TAG=${TAG:-$(git rev-parse --short HEAD)-$(date +%s)}  # You may need to override this if your git branch contains special characters
 IMAGE=${IMAGE:-quay.io/${ORG}/origin-cluster-node-tuning-operator:$TAG}
+TUNED_COMMIT=7c5c0f0
 
 nto_prepare_image() {
   make -C $WORKDIR update-tuned-submodule TUNED_COMMIT=${TUNED_COMMIT:-HEAD}
