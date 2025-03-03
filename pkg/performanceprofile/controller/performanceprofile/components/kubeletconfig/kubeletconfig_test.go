@@ -1,10 +1,12 @@
 package kubeletconfig
 
 import (
+	"encoding/json"
 	"fmt"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	kubeletconfigv1beta1 "k8s.io/kubelet/config/v1beta1"
 	"k8s.io/kubernetes/pkg/kubelet/eviction"
 	"k8s.io/utils/ptr"
@@ -38,6 +40,28 @@ var _ = Describe("Kubelet Config", func() {
 		Expect(manifest).To(ContainSubstring("memoryManagerPolicy: Static"))
 		Expect(manifest).To(ContainSubstring("cpuManagerPolicyOptions"))
 		Expect(manifest).To(ContainSubstring(testReservedMemory))
+	})
+
+	It("should not enable reserved memory autosizing by default", func() {
+		profile := testutils.NewPerformanceProfile("test")
+		profile.Annotations = map[string]string{}
+		selectorKey, selectorValue := components.GetFirstKeyAndValue(profile.Spec.MachineConfigPoolSelector)
+		kc, err := New(profile, &components.KubeletConfigOptions{MachineConfigPoolSelector: map[string]string{selectorKey: selectorValue}})
+		Expect(err).ToNot(HaveOccurred())
+		_, err = yaml.Marshal(kc)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(kc.Spec.AutoSizingReserved).ToNot(BeNil())
+		Expect(*kc.Spec.AutoSizingReserved).To(BeFalse())
+
+		// Make sure the reserved memory is configured
+		// as it is needed for memory manager
+		kubeletConfig := &kubeletconfigv1beta1.KubeletConfiguration{}
+		err = json.Unmarshal(kc.Spec.KubeletConfig.Raw, kubeletConfig)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(kubeletConfig.SystemReserved).ToNot(BeNil())
+		Expect(kubeletConfig.SystemReserved).To(HaveKey(string(corev1.ResourceMemory)))
+		Expect(kubeletConfig.KubeReserved).ToNot(BeNil())
+		Expect(kubeletConfig.KubeReserved).To(HaveKey(string(corev1.ResourceMemory)))
 	})
 
 	Context("with topology manager restricted policy", func() {
@@ -196,5 +220,33 @@ var _ = Describe("Kubelet Config", func() {
 			Expect(manifest).To(ContainSubstring(`full-pcpus-only: "false"`))
 		})
 
+		It("should enable reserved memory autosizing when requested", func() {
+			profile := testutils.NewPerformanceProfile("test")
+			profile.Annotations = map[string]string{
+				autoSizingReservedMemoryAnnotation: "true",
+			}
+			selectorKey, selectorValue := components.GetFirstKeyAndValue(profile.Spec.MachineConfigPoolSelector)
+			kc, err := New(profile, &components.KubeletConfigOptions{MachineConfigPoolSelector: map[string]string{selectorKey: selectorValue}})
+			Expect(err).ToNot(HaveOccurred())
+			_, err = yaml.Marshal(kc)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(kc.Spec.AutoSizingReserved).ToNot(BeNil())
+			Expect(*kc.Spec.AutoSizingReserved).To(BeTrue())
+
+			fmt.Printf("KubeletConfig: %s\n", kc.Spec.KubeletConfig.Raw)
+
+			// Make sure the reserved CPUs and memory are not configured
+			// as that causes the autosizing to be disabled by MCO
+			kubeletConfig := &kubeletconfigv1beta1.KubeletConfiguration{}
+			err = json.Unmarshal(kc.Spec.KubeletConfig.Raw, kubeletConfig)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(kubeletConfig.SystemReserved).ToNot(BeNil())
+			Expect(kubeletConfig.SystemReserved).ToNot(HaveKey(string(corev1.ResourceMemory)))
+			Expect(kubeletConfig.SystemReserved).ToNot(HaveKey(string(corev1.ResourceCPU)))
+			Expect(kubeletConfig.KubeReserved).ToNot(BeNil())
+			Expect(kubeletConfig.KubeReserved).ToNot(HaveKey(string(corev1.ResourceMemory)))
+			Expect(kubeletConfig.SystemReserved).ToNot(HaveKey(string(corev1.ResourceCPU)))
+
+		})
 	})
 })

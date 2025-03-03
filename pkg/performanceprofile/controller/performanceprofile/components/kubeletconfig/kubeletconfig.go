@@ -28,6 +28,7 @@ const (
 	// 5. Memory manager policy
 	// Please avoid specifying them and use the relevant API to configure these parameters.
 	experimentalKubeletSnippetAnnotation         = "kubeletconfig.experimental"
+	autoSizingReservedMemoryAnnotation           = "autosizing-reserved-memory"
 	cpuManagerPolicyStatic                       = "static"
 	cpuManagerPolicyOptionFullPCPUsOnly          = "full-pcpus-only"
 	memoryManagerPolicyStatic                    = "Static"
@@ -79,19 +80,29 @@ func New(profile *performancev2.PerformanceProfile, opts *components.KubeletConf
 		kubeletConfig.EvictionHard[evictionHardNodefsInodesFree] = defaultHardEvictionThresholdNodefsInodesFree
 	}
 
+	// Check if auto sizing should be enabled.
+	// Pay attention to the fact this will actually enable reserved cpu autosizing as well,
+	// however the ReservedSystemCPUs override the plain reserved cpus in kubelet
+	// NOTE: We could enable this by default when no memory size is provided explicitly, but
+	//       it would cause a reboot on upgrade due to KubeletConfig change
+	enableReservedMemoryAutoSizing := false
+	if v, ok := profile.Annotations[autoSizingReservedMemoryAnnotation]; ok {
+		enableReservedMemoryAutoSizing = (v == "1" || v == "true")
+	}
+
 	// set the default memory kube-reserved
-	if kubeletConfig.KubeReserved == nil {
+	if kubeletConfig.KubeReserved == nil && !enableReservedMemoryAutoSizing {
 		kubeletConfig.KubeReserved = map[string]string{}
 	}
-	if _, ok := kubeletConfig.KubeReserved[string(corev1.ResourceMemory)]; !ok {
+	if _, ok := kubeletConfig.KubeReserved[string(corev1.ResourceMemory)]; !ok && !enableReservedMemoryAutoSizing {
 		kubeletConfig.KubeReserved[string(corev1.ResourceMemory)] = defaultKubeReservedMemory
 	}
 
 	// set the default memory system-reserved
-	if kubeletConfig.SystemReserved == nil {
+	if kubeletConfig.SystemReserved == nil && !enableReservedMemoryAutoSizing {
 		kubeletConfig.SystemReserved = map[string]string{}
 	}
-	if _, ok := kubeletConfig.SystemReserved[string(corev1.ResourceMemory)]; !ok {
+	if _, ok := kubeletConfig.SystemReserved[string(corev1.ResourceMemory)]; !ok && !enableReservedMemoryAutoSizing {
 		kubeletConfig.SystemReserved[string(corev1.ResourceMemory)] = defaultSystemReservedMemory
 	}
 
@@ -174,6 +185,7 @@ func New(profile *performancev2.PerformanceProfile, opts *components.KubeletConf
 			Name: name,
 		},
 		Spec: machineconfigv1.KubeletConfigSpec{
+			AutoSizingReserved: &enableReservedMemoryAutoSizing,
 			MachineConfigPoolSelector: &metav1.LabelSelector{
 				MatchLabels: opts.MachineConfigPoolSelector,
 			},
