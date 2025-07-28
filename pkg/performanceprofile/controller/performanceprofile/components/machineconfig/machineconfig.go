@@ -315,8 +315,9 @@ func getIgnitionConfig(profile *performancev2.PerformanceProfile, opts *componen
 		addContent(ignitionConfig, content, dst, &mode)
 	}
 
-	// Add dynamic memory enforcement service only if annotation is enabled
-	if profilecomponent.IsEnforceReservedMemoryEnabled(profile) {
+	// Add dynamic memory enforcement service only if annotation is enabled and workload partitioning is enabled
+	clusterHasWorkloadPartitioning := opts.PinningMode != nil && *opts.PinningMode == apiconfigv1.CPUPartitioningAllNodes
+	if profilecomponent.IsEnforceReservedMemoryEnabled(profile) && clusterHasWorkloadPartitioning {
 		dynamicMemoryEnforcementService, err := getSystemdContent(getDynamicMemoryEnforcementUnitOptions())
 		if err != nil {
 			return nil, err
