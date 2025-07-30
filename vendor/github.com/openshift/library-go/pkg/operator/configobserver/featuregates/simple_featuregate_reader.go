@@ -297,9 +297,9 @@ func featuresFromFeatureGate(featureGate *configv1.FeatureGate, desiredVersion s
 	found := false
 	features := Features{}
 	for _, featureGateValues := range featureGate.Status.FeatureGates {
-		if featureGateValues.Version != desiredVersion {
-			continue
-		}
+		// if featureGateValues.Version != desiredVersion {
+		// 	continue
+		// }
 		found = true
 		for _, enabled := range featureGateValues.Enabled {
 			features.Enabled = append(features.Enabled, enabled.Name)
