@@ -612,7 +612,7 @@ func getDynamicMemoryEnforcementUnitOptions() []*unit.UnitOption {
 		// RemainAfterExit
 		unit.NewUnitOption(systemdSectionService, systemdRemainAfterExit, systemdTrue),
 		// ExecStart
-		unit.NewUnitOption(systemdSectionService, systemdExecStart, fmt.Sprintf("watch /usr/bin/python3 %s", getPythonScriptPath(dynamicMemoryEnforcement))),
+		unit.NewUnitOption(systemdSectionService, systemdExecStart, fmt.Sprintf("bash -c 'while true; do /usr/bin/python3 %s; sleep 2; done'", getPythonScriptPath(dynamicMemoryEnforcement))),
 		// [Install]
 		// WantedBy
 		unit.NewUnitOption(systemdSectionInstall, systemdWantedBy, systemdTargetMultiUser),
